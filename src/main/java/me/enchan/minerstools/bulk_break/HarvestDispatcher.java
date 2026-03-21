@@ -4,6 +4,7 @@ import java.util.List;
 
 import me.enchan.minerstools.bulk_break.strategy.BulkBreakStrategy;
 import me.enchan.minerstools.bulk_break.strategy.FellingStrategy;
+import me.enchan.minerstools.bulk_break.strategy.MiningStrategy;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -11,9 +12,8 @@ import net.minecraft.world.World;
 
 public class HarvestDispatcher {
     private static final List<BulkBreakStrategy> Strategies = List.of(
-            new FellingStrategy()
-    // new MiningStrategy
-    );
+            new FellingStrategy(),
+            new MiningStrategy());
 
     public static void onBreakBlock(
             World world,

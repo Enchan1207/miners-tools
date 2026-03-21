@@ -1,0 +1,33 @@
+{
+	"schemaVersion": 1,
+	"id": "miners-tools",
+	"version": "${version}",
+	"name": "Miners Tools",
+	"description": "Provide useful tools for mining or lumbering",
+	"authors": [
+		"Enchan1207"
+	],
+	"license": "MIT",
+	"icon": "assets/miners-tools/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"me.enchan.minerstools.MinersToolsMod"
+		],
+		"client": [
+			"me.enchan.minerstools.MinersToolsModClient"
+		]
+	},
+	"mixins": [
+		"miners-tools.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.10",
+		"minecraft": "~1.20.6",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

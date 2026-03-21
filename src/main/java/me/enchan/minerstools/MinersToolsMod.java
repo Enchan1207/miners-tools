@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 
 public class MinersToolsMod implements ModInitializer {
@@ -28,6 +29,8 @@ public class MinersToolsMod implements ModInitializer {
             var queue = new LinkedList<BlockPos>();
             queue.add(origin);
 
+            int broken = 0;
+
             while (!queue.isEmpty()) {
                 var pos = queue.poll();
 
@@ -41,11 +44,17 @@ public class MinersToolsMod implements ModInitializer {
                         .filter(p -> world.getBlockState(p).getBlock().equals(state.getBlock()))
                         .toList();
 
+                broken += candidates.size();
+
                 for (var candidate : candidates) {
                     world.breakBlock(candidate, true, player);
                 }
 
                 queue.addAll(candidates);
+            }
+
+            if (broken > 0) {
+                player.sendMessage(Text.literal("Chain! %d brockes were broken.".formatted(broken + 1)), true);
             }
         });
     }

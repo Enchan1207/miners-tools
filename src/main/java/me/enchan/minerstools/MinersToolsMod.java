@@ -48,6 +48,8 @@ public class MinersToolsMod implements ModInitializer {
             var queue = new LinkedList<BlockPos>();
             queue.add(origin);
 
+            int broken = 0;
+
             while (!queue.isEmpty()) {
                 var pos = queue.poll();
 
@@ -61,11 +63,17 @@ public class MinersToolsMod implements ModInitializer {
                         .filter(p -> world.getBlockState(p).getBlock().equals(state.getBlock()))
                         .toList();
 
+                broken += candidates.size();
+
                 for (var candidate : candidates) {
                     world.breakBlock(candidate, true, player);
                 }
 
                 queue.addAll(candidates);
+            }
+
+            if (broken > 0) {
+                player.sendMessage(Text.literal("Chain! %d brockes were broken.".formatted(broken + 1)), true);
             }
         });
 

@@ -8,8 +8,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.CropBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public class HarvestingStrategy implements BulkBreakStrategy {
 
@@ -26,7 +26,7 @@ public class HarvestingStrategy implements BulkBreakStrategy {
     }
 
     @Override
-    public Set<BlockPos> collectTargets(World world, BlockPos origin, BlockState originState) {
+    public Set<BlockPos> collectTargets(ServerWorld world, BlockPos origin, BlockState originState) {
         var originBlock = originState.getBlock();
 
         var visited = new HashSet<BlockPos>();
@@ -69,7 +69,7 @@ public class HarvestingStrategy implements BulkBreakStrategy {
     }
 
     @Override
-    public void harvest(World world, BlockPos pos, PlayerEntity player) {
+    public void harvest(ServerWorld world, BlockPos pos, PlayerEntity player) {
         // TODO: #6 アイテムスタックを見て自動で植え直したい
         BulkBreakStrategy.super.harvest(world, pos, player);
     }

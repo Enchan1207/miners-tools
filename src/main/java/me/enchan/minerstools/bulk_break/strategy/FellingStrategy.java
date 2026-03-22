@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
@@ -13,13 +14,21 @@ import net.minecraft.world.World;
 
 /** 伐採ストラテジ */
 public class FellingStrategy implements BulkBreakStrategy {
+
+    private enum FellingMode {
+        TREE,
+        MUSHROOM,
+        WARP_TREE,
+        CRIMSON_TREE
+    }
+
     @Override
     public boolean matches(
             BlockState state,
             PlayerEntity player,
             ItemStack tool) {
-        // 葉から破壊することはない想定
-        return state.isIn(BlockTags.LOGS);
+        var mode = classifyFellingMode(state);
+        return isNode(mode, state);
     }
 
     @Override
@@ -27,19 +36,21 @@ public class FellingStrategy implements BulkBreakStrategy {
             World world,
             BlockPos origin,
             BlockState originState) {
-        var visited = new HashSet<BlockPos>();
-        var queue = new ArrayDeque<BlockPos>();
+        var marked = new HashSet<BlockPos>();
+        var chainQueue = new ArrayDeque<BlockPos>();
 
-        visited.add(origin);
-        queue.add(origin);
+        var mode = classifyFellingMode(originState);
 
-        while (!queue.isEmpty()) {
-            var center = queue.poll();
+        marked.add(origin);
+        chainQueue.add(origin);
+
+        while (!chainQueue.isEmpty()) {
+            var center = chainQueue.poll();
 
             BlockPos
                     .stream(center.add(-1, -1, -1), center.add(1, 1, 1))
                     .map(BlockPos::toImmutable)
-                    .filter(p -> !visited.contains(p))
+                    .filter(p -> !marked.contains(p))
                     .filter(p -> {
                         // 起点からXZ方向の距離4ブロック以内
                         var flatOrigin = origin.withY(0);
@@ -53,30 +64,30 @@ public class FellingStrategy implements BulkBreakStrategy {
 
                         // 起点と同じブロックなら継続
                         if (pState.getBlock().equals(originState.getBlock())) {
-                            visited.add(p);
-                            queue.add(p);
+                            marked.add(p);
+                            chainQueue.add(p);
                             return;
                         }
 
-                        // 中央が原木で相手が葉なら継続
-                        if (centerState.isIn(BlockTags.LOGS) && pState.isIn(BlockTags.LEAVES)) {
-                            visited.add(p);
-                            queue.add(p);
+                        // 中央がノードで相手がリーフなら継続
+                        if (isNode(mode, centerState) && isLeaf(mode, pState)) {
+                            marked.add(p);
+                            chainQueue.add(p);
                             return;
                         }
 
-                        // 中央が葉の場合、
-                        if (centerState.isIn(BlockTags.LEAVES)) {
-                            // 相手が葉なら継続
-                            if (pState.isIn(BlockTags.LEAVES)) {
-                                visited.add(p);
-                                queue.add(p);
+                        // 中央がリーフの場合、
+                        if (isLeaf(mode, centerState)) {
+                            // 相手がリーフなら継続
+                            if (isLeaf(mode, pState)) {
+                                marked.add(p);
+                                chainQueue.add(p);
                                 return;
                             }
 
-                            // 相手が原木なら連鎖を中止
-                            if (pState.isIn(BlockTags.LOGS)) {
-                                visited.add(p);
+                            // 相手がノードなら連鎖を中止
+                            if (isNode(mode, pState)) {
+                                marked.add(p);
                                 return;
                             }
                         }
@@ -84,7 +95,69 @@ public class FellingStrategy implements BulkBreakStrategy {
         }
 
         // このメソッドが呼び出された時点で起点のブロックは破壊されているので、候補から除外
-        visited.remove(origin);
-        return visited;
+        marked.remove(origin);
+        return marked;
+    }
+
+    private FellingMode classifyFellingMode(BlockState state) {
+        // 歪んだ幹
+        if (state.isIn(BlockTags.WARPED_STEMS)) {
+            return FellingMode.WARP_TREE;
+        }
+
+        // 真紅の幹
+        if (state.isIn(BlockTags.CRIMSON_STEMS)) {
+            return FellingMode.CRIMSON_TREE;
+        }
+
+        // キノコ
+        if (state.isOf(Blocks.MUSHROOM_STEM)) {
+            return FellingMode.MUSHROOM;
+        }
+
+        return FellingMode.TREE;
+    }
+
+    private boolean isNode(FellingMode mode, BlockState state) {
+        if (mode == FellingMode.TREE && state.isIn(BlockTags.LOGS)) {
+            return true;
+        }
+
+        // 歪んだ幹
+        if (mode == FellingMode.WARP_TREE && state.isIn(BlockTags.WARPED_STEMS)) {
+            return true;
+        }
+
+        // 真紅の幹
+        if (mode == FellingMode.CRIMSON_TREE && state.isIn(BlockTags.CRIMSON_STEMS)) {
+            return true;
+        }
+
+        // キノコ
+        if (mode == FellingMode.MUSHROOM && state.isOf(Blocks.MUSHROOM_STEM)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isLeaf(FellingMode mode, BlockState state) {
+        if (mode == FellingMode.TREE && state.isIn(BlockTags.LEAVES)) {
+            return true;
+        }
+
+        // ネザーウォートブロック・シュルームライト
+        if (mode == FellingMode.CRIMSON_TREE
+                && (state.isOf(Blocks.NETHER_WART_BLOCK) || state.isOf(Blocks.SHROOMLIGHT))) {
+            return true;
+        }
+
+        // キノコ
+        if (mode == FellingMode.MUSHROOM
+                && (state.isOf(Blocks.BROWN_MUSHROOM_BLOCK) || state.isOf(Blocks.RED_MUSHROOM_BLOCK))) {
+            return true;
+        }
+
+        return false;
     }
 }

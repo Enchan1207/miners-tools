@@ -8,8 +8,8 @@ import me.enchan.minerstools.bulk_break.strategy.HarvestingStrategy;
 import me.enchan.minerstools.bulk_break.strategy.MiningStrategy;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public class BulkBreakDispatcher {
     private static final List<BulkBreakStrategy> Strategies = List.of(
@@ -18,7 +18,7 @@ public class BulkBreakDispatcher {
             new HarvestingStrategy());
 
     public static void onBreakBlock(
-            World world,
+            ServerWorld world,
             BlockPos origin,
             PlayerEntity player,
             BlockState originState) {

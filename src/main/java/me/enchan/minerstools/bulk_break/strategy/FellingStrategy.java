@@ -9,8 +9,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 /** 伐採ストラテジ */
 public class FellingStrategy implements BulkBreakStrategy {
@@ -33,7 +33,7 @@ public class FellingStrategy implements BulkBreakStrategy {
 
     @Override
     public Set<BlockPos> collectTargets(
-            World world,
+            ServerWorld world,
             BlockPos origin,
             BlockState originState) {
         var marked = new HashSet<BlockPos>();

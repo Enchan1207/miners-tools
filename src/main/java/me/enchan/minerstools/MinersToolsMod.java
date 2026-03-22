@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -36,7 +37,8 @@ public class MinersToolsMod implements ModInitializer {
             if (!toolStatusByPlayer.getOrDefault(player.getUuid(), false)) {
                 return;
             }
-            BulkBreakDispatcher.onBreakBlock(world, origin, player, state);
+
+            BulkBreakDispatcher.onBreakBlock((ServerWorld) world, origin, player, state);
         });
 
         ServerPlayNetworking.registerGlobalReceiver(MinersToolsModeTogglePayload.ID, (payload, context) -> {

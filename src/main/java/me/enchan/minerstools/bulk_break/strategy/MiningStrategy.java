@@ -11,8 +11,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public class MiningStrategy implements BulkBreakStrategy {
 
@@ -34,7 +34,7 @@ public class MiningStrategy implements BulkBreakStrategy {
     }
 
     @Override
-    public Set<BlockPos> collectTargets(World world, BlockPos origin, BlockState originState) {
+    public Set<BlockPos> collectTargets(ServerWorld world, BlockPos origin, BlockState originState) {
         var visited = new HashSet<BlockPos>();
         var queue = new ArrayDeque<BlockPos>();
 

@@ -34,49 +34,57 @@ public class FellingStrategy implements BulkBreakStrategy {
         queue.add(origin);
 
         while (!queue.isEmpty()) {
-            var pos = queue.poll();
+            var center = queue.poll();
 
             BlockPos
-                    .stream(pos.add(-1, -1, -1), pos.add(1, 1, 1))
+                    .stream(center.add(-1, -1, -1), center.add(1, 1, 1))
                     .map(BlockPos::toImmutable)
                     .filter(p -> !visited.contains(p))
-                    .filter(p -> isInRange(origin, p))
                     .filter(p -> {
-                        // FIXME #6: なんかここおかしい, 木 -> 葉 -> 木 のチェインが成立してしまっている
-                        var state = world.getBlockState(p);
-                        var posState = world.getBlockState(pos);
+                        // 起点からXZ方向の距離4ブロック以内
+                        var flatOrigin = origin.withY(0);
+                        var flatPos = p.withY(0);
 
-                        // 同じブロックか、木 -> 葉 のチェインは継続する。葉 -> 木のチェインは繋がない
-
-                        if (state.getBlock().equals(originState.getBlock())) {
-                            return true;
-                        }
-
-                        if (state.isIn(BlockTags.LEAVES) && posState.isIn(BlockTags.LOGS)) {
-                            return true;
-                        }
-
-                        return false;
+                        return flatPos.isWithinDistance(flatOrigin, 4);
                     })
                     .forEach(p -> {
-                        visited.add(p);
-                        queue.add(p);
+                        var pState = world.getBlockState(p);
+                        var centerState = world.getBlockState(center);
+
+                        // 起点と同じブロックなら継続
+                        if (pState.getBlock().equals(originState.getBlock())) {
+                            visited.add(p);
+                            queue.add(p);
+                            return;
+                        }
+
+                        // 中央が原木で相手が葉なら継続
+                        if (centerState.isIn(BlockTags.LOGS) && pState.isIn(BlockTags.LEAVES)) {
+                            visited.add(p);
+                            queue.add(p);
+                            return;
+                        }
+
+                        // 中央が葉の場合、
+                        if (centerState.isIn(BlockTags.LEAVES)) {
+                            // 相手が葉なら継続
+                            if (pState.isIn(BlockTags.LEAVES)) {
+                                visited.add(p);
+                                queue.add(p);
+                                return;
+                            }
+
+                            // 相手が原木なら連鎖を中止
+                            if (pState.isIn(BlockTags.LOGS)) {
+                                visited.add(p);
+                                return;
+                            }
+                        }
                     });
         }
 
         // このメソッドが呼び出された時点で起点のブロックは破壊されているので、候補から除外
         visited.remove(origin);
         return visited;
-    }
-
-    private Boolean isInRange(BlockPos origin, BlockPos pos) {
-        var xzLimit = 4;
-        var yLimit = 20;
-
-        var dx = Math.abs(pos.getX() - origin.getX());
-        var dz = Math.abs(pos.getZ() - origin.getZ());
-        var dy = Math.abs(pos.getY() - origin.getY());
-
-        return dx <= xzLimit && dz <= xzLimit && dy <= yLimit;
     }
 }

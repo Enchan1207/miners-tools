@@ -5,6 +5,7 @@ import java.util.Set;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -17,8 +18,13 @@ public interface BulkBreakStrategy {
     /** 起点ブロックから破壊すべき対象座標を収集する */
     Set<BlockPos> collectTargets(World world, BlockPos origin, BlockState originState);
 
-    /** 1ブロック分の処理（農耕など再植えが必要な場合にオーバーライド） */
+    /** ブロックを破壊する */
     default void harvest(World world, BlockPos pos, PlayerEntity player) {
-        world.breakBlock(pos, true, player);
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            serverPlayer.interactionManager.tryBreakBlock(pos);
+        } else {
+            // フォールバック
+            world.breakBlock(pos, true, player);
+        }
     }
 }

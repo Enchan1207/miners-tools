@@ -47,7 +47,9 @@ public class FellingStrategy implements BulkBreakStrategy {
         while (!chainQueue.isEmpty()) {
             var center = chainQueue.poll();
 
-            BlockPos
+            var centerState = center.equals(origin) ? originState : world.getBlockState(center);
+
+            var unmarkedSurroundings = BlockPos
                     .stream(center.add(-1, -1, -1), center.add(1, 1, 1))
                     .map(BlockPos::toImmutable)
                     .filter(p -> !marked.contains(p))
@@ -57,41 +59,28 @@ public class FellingStrategy implements BulkBreakStrategy {
                         var flatPos = p.withY(0);
 
                         return flatPos.isWithinDistance(flatOrigin, 4);
-                    })
-                    .forEach(p -> {
-                        var pState = world.getBlockState(p);
-                        var centerState = world.getBlockState(center);
-
-                        // 起点と同じブロックなら継続
-                        if (pState.getBlock().equals(originState.getBlock())) {
-                            marked.add(p);
-                            chainQueue.add(p);
-                            return;
-                        }
-
-                        // 中央がノードで相手がリーフなら継続
-                        if (isNode(mode, centerState) && isLeaf(mode, pState)) {
-                            marked.add(p);
-                            chainQueue.add(p);
-                            return;
-                        }
-
-                        // 中央がリーフの場合、
-                        if (isLeaf(mode, centerState)) {
-                            // 相手がリーフなら継続
-                            if (isLeaf(mode, pState)) {
-                                marked.add(p);
-                                chainQueue.add(p);
-                                return;
-                            }
-
-                            // 相手がノードなら連鎖を中止
-                            if (isNode(mode, pState)) {
-                                marked.add(p);
-                                return;
-                            }
-                        }
                     });
+
+            unmarkedSurroundings.forEach(p -> {
+                var pState = world.getBlockState(p);
+                if (pState.isAir()) {
+                    return;
+                }
+
+                // 起点と同じブロックなら継続
+                if (pState.getBlock().equals(centerState.getBlock())) {
+                    marked.add(p);
+                    chainQueue.add(p);
+                    return;
+                }
+
+                // 起点がノードで相手がリーフなら継続
+                if (isNode(mode, centerState) && isLeaf(mode, pState)) {
+                    marked.add(p);
+                    chainQueue.add(p);
+                    return;
+                }
+            });
         }
 
         // このメソッドが呼び出された時点で起点のブロックは破壊されているので、候補から除外

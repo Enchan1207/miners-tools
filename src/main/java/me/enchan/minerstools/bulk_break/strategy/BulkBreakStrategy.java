@@ -5,7 +5,6 @@ import java.util.Set;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -20,11 +19,12 @@ public interface BulkBreakStrategy {
 
     /** ブロックを破壊する */
     default void harvest(World world, BlockPos pos, PlayerEntity player) {
-        if (player instanceof ServerPlayerEntity serverPlayer) {
-            serverPlayer.interactionManager.tryBreakBlock(pos);
-        } else {
-            // フォールバック
-            world.breakBlock(pos, true, player);
-        }
+        world.breakBlock(pos, true, player);
+        // if (player instanceof ServerPlayerEntity serverPlayer) {
+        // serverPlayer.interactionManager.tryBreakBlock(pos);
+        // } else {
+        // // フォールバック
+        // world.breakBlock(pos, true, player);
+        // }
     }
 }

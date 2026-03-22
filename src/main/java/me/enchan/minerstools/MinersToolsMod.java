@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import me.enchan.minerstools.bulk_break.HarvestDispatcher;
+import me.enchan.minerstools.bulk_break.BulkBreakDispatcher;
 import me.enchan.minerstools.payloads.MinersToolsModeTogglePayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
@@ -36,7 +36,7 @@ public class MinersToolsMod implements ModInitializer {
             if (!toolStatusByPlayer.getOrDefault(player.getUuid(), false)) {
                 return;
             }
-            HarvestDispatcher.onBreakBlock(world, origin, player, state);
+            BulkBreakDispatcher.onBreakBlock(world, origin, player, state);
         });
 
         ServerPlayNetworking.registerGlobalReceiver(MinersToolsModeTogglePayload.ID, (payload, context) -> {

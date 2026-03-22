@@ -10,7 +10,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class HarvestDispatcher {
+public class BulkBreakDispatcher {
     private static final List<BulkBreakStrategy> Strategies = List.of(
             new FellingStrategy(),
             new MiningStrategy());

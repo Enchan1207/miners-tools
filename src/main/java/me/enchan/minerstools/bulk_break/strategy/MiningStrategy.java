@@ -64,4 +64,9 @@ public class MiningStrategy implements BulkBreakStrategy {
         return visited;
     }
 
+    @Override
+    public void harvest(World world, BlockPos pos, PlayerEntity player) {
+        // TODO: 採掘に使ったツールで破壊する
+        BulkBreakStrategy.super.harvest(world, pos, player);
+    }
 }

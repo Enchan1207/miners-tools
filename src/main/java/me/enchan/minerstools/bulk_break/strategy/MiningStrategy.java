@@ -7,6 +7,7 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.BlockTags;
@@ -18,7 +19,7 @@ public class MiningStrategy implements BulkBreakStrategy {
 
     @Override
     public boolean matches(BlockState state, PlayerEntity player, ItemStack tool) {
-        List<TagKey<Block>> targetBlockTags = List.of(
+        List<TagKey<Block>> oreTags = List.of(
                 BlockTags.COAL_ORES,
                 BlockTags.GOLD_ORES,
                 BlockTags.IRON_ORES,
@@ -27,10 +28,19 @@ public class MiningStrategy implements BulkBreakStrategy {
                 BlockTags.DIAMOND_ORES,
                 BlockTags.EMERALD_ORES,
                 BlockTags.REDSTONE_ORES);
+        if (oreTags.stream().anyMatch(t -> state.isIn(t))) {
+            return true;
+        }
 
-        // TODO: #6 ネザー水晶, グロウストーン, 黒曜石などの追加
+        List<Block> oreBlocks = List.of(
+                Blocks.NETHER_QUARTZ_ORE,
+                Blocks.GLOWSTONE,
+                Blocks.OBSIDIAN);
+        if (oreBlocks.stream().anyMatch(b -> state.isOf(b))) {
+            return true;
+        }
 
-        return targetBlockTags.stream().anyMatch(t -> state.isIn(t));
+        return false;
     }
 
     @Override

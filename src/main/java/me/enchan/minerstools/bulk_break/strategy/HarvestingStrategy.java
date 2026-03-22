@@ -51,10 +51,6 @@ public class HarvestingStrategy implements BulkBreakStrategy {
                             return false;
                         }
 
-                        if (!(block instanceof CropBlock)) {
-                            return false;
-                        }
-
                         return block instanceof CropBlock crop && crop.isMature(state);
                     })
                     .forEach(p -> {
@@ -70,8 +66,21 @@ public class HarvestingStrategy implements BulkBreakStrategy {
 
     @Override
     public void harvest(ServerWorld world, BlockPos pos, PlayerEntity player) {
-        // TODO: #6 アイテムスタックを見て自動で植え直したい
+        var state = world.getBlockState(pos);
+
         BulkBreakStrategy.super.harvest(world, pos, player);
+
+        // 種アイテムがあるなら植え直す
+        var seedItem = ((CropBlock) state.getBlock()).getPickStack(world, pos, state).getItem();
+
+        var hasSeed = player.getInventory().contains(stack -> stack.isOf(seedItem));
+        if (!hasSeed) {
+            return;
+        }
+
+        player.getInventory().remove(stack -> stack.isOf(seedItem), 1,
+                player.playerScreenHandler.getCraftingInput());
+        world.setBlockState(pos, state.with(CropBlock.AGE, 0));
     }
 
 }

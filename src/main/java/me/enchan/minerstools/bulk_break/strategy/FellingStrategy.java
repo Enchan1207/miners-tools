@@ -135,13 +135,19 @@ public class FellingStrategy implements BulkBreakStrategy {
             return true;
         }
 
-        // ネザーウォートブロック・シュルームライト
+        // 歪んだ樹: 歪んだウォートブロック・シュルームライト
+        if (mode == FellingMode.WARP_TREE
+                && (state.isOf(Blocks.WARPED_WART_BLOCK) || state.isOf(Blocks.SHROOMLIGHT))) {
+            return true;
+        }
+
+        // 真紅の樹: ネザーウォートブロック・シュルームライト
         if (mode == FellingMode.CRIMSON_TREE
                 && (state.isOf(Blocks.NETHER_WART_BLOCK) || state.isOf(Blocks.SHROOMLIGHT))) {
             return true;
         }
 
-        // キノコ
+        // キノコ: キノコブロック
         if (mode == FellingMode.MUSHROOM
                 && (state.isOf(Blocks.BROWN_MUSHROOM_BLOCK) || state.isOf(Blocks.RED_MUSHROOM_BLOCK))) {
             return true;

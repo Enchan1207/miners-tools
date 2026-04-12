@@ -49,7 +49,7 @@ public class MinersToolsMod implements ModInitializer {
             toolStatusByPlayer.put(player.getUuid(), isEnabled);
 
             Text message = Text.empty()
-                    .append(Text.literal("Cut All: "))
+                    .append(Text.literal("Miners tools: "))
                     .append(isEnabled
                             ? Text.literal("ON").formatted(Formatting.GREEN)
                             : Text.literal("OFF").formatted(Formatting.RED));

@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import me.enchan.minerstools.auto_tool.AutoToolSwitcher;
 import me.enchan.minerstools.bulk_break.BulkBreakDispatcher;
 import me.enchan.minerstools.events.MinersToolsMainHandToolBreakEvent;
 import me.enchan.minerstools.payloads.MinersToolsModeTogglePayload;
@@ -47,39 +48,7 @@ public class MinersToolsMod implements ModInitializer {
                 return;
             }
 
-            // 壊れたアイテムを取得
-            var brokenItemStack = player.getMainHandStack();
-
-            var inventory = player.getInventory().main;
-            var candidateIndex = -1;
-            for (int i = 0; i < inventory.size(); i++) {
-                var itemStack = inventory.get(i);
-                if (itemStack.equals(brokenItemStack)) {
-                    continue;
-                }
-
-                if (!itemStack.getItem().equals(brokenItemStack.getItem())) {
-                    continue;
-                }
-
-                // TODO: より耐久の残っているものから利用していくなどの最適化もできるかも
-                candidateIndex = i;
-            }
-
-            if (candidateIndex < 0) {
-                player.sendMessage(Text.literal("No alternative tools!"), true);
-                return;
-            }
-            var alternativeItem = inventory.get(candidateIndex);
-
-            // 持ち替え
-            var currentSlot = player.getInventory().selectedSlot;
-            inventory.set(candidateIndex, inventory.get(currentSlot));
-            inventory.set(currentSlot, alternativeItem);
-
-            player.currentScreenHandler.sendContentUpdates();
-
-            player.sendMessage(Text.literal("Switched to new one!"), true);
+            AutoToolSwitcher.onBreakMainhandTool(player);
         });
 
         ServerPlayNetworking.registerGlobalReceiver(MinersToolsModeTogglePayload.ID, (payload, context) -> {

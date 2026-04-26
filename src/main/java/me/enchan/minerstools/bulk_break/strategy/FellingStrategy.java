@@ -41,6 +41,8 @@ public class FellingStrategy implements BulkBreakStrategy {
 
         var mode = classifyFellingMode(originState);
 
+        var fellingRadius = getFellingTargetRadius(mode);
+
         marked.add(origin);
         chainQueue.add(origin);
 
@@ -54,11 +56,9 @@ public class FellingStrategy implements BulkBreakStrategy {
                     .map(BlockPos::toImmutable)
                     .filter(p -> !marked.contains(p))
                     .filter(p -> {
-                        // 起点からXZ方向の距離4ブロック以内
                         var flatOrigin = origin.withY(0);
                         var flatPos = p.withY(0);
-
-                        return flatPos.isWithinDistance(flatOrigin, 4);
+                        return flatPos.isWithinDistance(flatOrigin, fellingRadius);
                     });
 
             unmarkedSurroundings.forEach(p -> {
@@ -154,5 +154,22 @@ public class FellingStrategy implements BulkBreakStrategy {
         }
 
         return false;
+    }
+
+    /** 収穫対象の半径を取得する */
+    private int getFellingTargetRadius(FellingMode mode) {
+        switch (mode) {
+            case FellingMode.WARP_TREE:
+                return 8;
+
+            case FellingMode.CRIMSON_TREE:
+                return 8;
+
+            case FellingMode.MUSHROOM:
+                return 8;
+
+            default:
+                return 6;
+        }
     }
 }

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CropBlock;
+import net.minecraft.block.NetherWartBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
@@ -15,14 +16,7 @@ public class HarvestingStrategy implements BulkBreakStrategy {
 
     @Override
     public boolean matches(BlockState state, PlayerEntity player, ItemStack tool) {
-        // TODO: #6 スイカ・カボチャには対応できていない (が、そこまで大規模にやるか……?)
-
-        // 作物かつ収穫可能であること
-        if (state.getBlock() instanceof CropBlock crop && crop.isMature(state)) {
-            return true;
-        }
-
-        return false;
+        return isMature(state);
     }
 
     @Override
@@ -31,6 +25,8 @@ public class HarvestingStrategy implements BulkBreakStrategy {
 
         var visited = new HashSet<BlockPos>();
         var queue = new ArrayDeque<BlockPos>();
+
+        var harvestRadius = 18;
 
         visited.add(origin);
         queue.add(origin);
@@ -42,16 +38,15 @@ public class HarvestingStrategy implements BulkBreakStrategy {
                     .stream(pos.add(-1, 0, -1), pos.add(1, 0, 1))
                     .map(BlockPos::toImmutable)
                     .filter(p -> !visited.contains(p))
-                    .filter(p -> p.isWithinDistance(origin, 6))
+                    .filter(p -> p.isWithinDistance(origin, harvestRadius))
                     .filter(p -> {
                         var state = world.getBlockState(p);
-                        var block = state.getBlock();
 
-                        if (!block.equals(originBlock)) {
+                        if (!state.getBlock().equals(originBlock)) {
                             return false;
                         }
 
-                        return block instanceof CropBlock crop && crop.isMature(state);
+                        return isMature(state);
                     })
                     .forEach(p -> {
                         visited.add(p);
@@ -70,8 +65,10 @@ public class HarvestingStrategy implements BulkBreakStrategy {
 
         BulkBreakStrategy.super.harvest(world, pos, player);
 
-        // 種アイテムがあるなら植え直す
-        var seedItem = ((CropBlock) state.getBlock()).getPickStack(world, pos, state).getItem();
+        var block = state.getBlock();
+
+        // 作物の場合、種に対応するアイテムがあるなら植え直す
+        var seedItem = block.getPickStack(world, pos, state).getItem();
 
         var hasSeed = player.getInventory().contains(stack -> stack.isOf(seedItem));
         if (!hasSeed) {
@@ -80,7 +77,33 @@ public class HarvestingStrategy implements BulkBreakStrategy {
 
         player.getInventory().remove(stack -> stack.isOf(seedItem), 1,
                 player.playerScreenHandler.getCraftingInput());
-        world.setBlockState(pos, state.with(CropBlock.AGE, 0));
+
+        if (block instanceof CropBlock) {
+            world.setBlockState(pos, state.with(CropBlock.AGE, 0));
+        }
+
+        if (block instanceof NetherWartBlock) {
+            world.setBlockState(pos, state.with(NetherWartBlock.AGE, 0));
+        }
+    }
+
+    private boolean isMature(BlockState state) {
+        // TODO: #6 スイカ・カボチャには対応できていない (が、そこまで大規模にやるか……?)
+
+        var block = state.getBlock();
+
+        // 作物であり、収穫可能であること
+        if (block instanceof CropBlock crop && crop.isMature(state)) {
+            return true;
+        }
+
+        // ネザーウォートであり、age=3(最大)であること
+        if (block instanceof NetherWartBlock) {
+            var age = state.get(NetherWartBlock.AGE).intValue();
+            return age == 3;
+        }
+
+        return false;
     }
 
 }

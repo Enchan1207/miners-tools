@@ -27,6 +27,7 @@
   ],
   "settings": {
     "explorer.compactFolders": true,
+    "java.configuration.updateBuildConfiguration": "interactive",
   },
   "extensions": {
     "recommendations": ["redhat.java", "vscjava.vscode-java-pack"],

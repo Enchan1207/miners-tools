@@ -27,6 +27,8 @@ public class MinersToolsMod implements ModInitializer {
 
     private static final Map<UUID, Boolean> toolStatusByPlayer = new HashMap<>();
 
+    private BulkBreakDispatcher dispatcher = new BulkBreakDispatcher();
+
     @Override
     public void onInitialize() {
         Logger.info("miners-tools");
@@ -40,7 +42,7 @@ public class MinersToolsMod implements ModInitializer {
                 return;
             }
 
-            BulkBreakDispatcher.onBreakBlock((ServerWorld) world, origin, player, state);
+            dispatcher.dispatchStrategy((ServerWorld) world, origin, player, state);
         });
 
         MinersToolsMainHandToolBreakEvent.EVENT.register(player -> {

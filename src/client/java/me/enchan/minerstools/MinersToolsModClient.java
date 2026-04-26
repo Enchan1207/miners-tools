@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.enchan.minerstools.payloads.MinersToolsModeTogglePayload;
+import me.enchan.minerstools.payloads.MinersToolsOneshotTriggerPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -17,6 +18,8 @@ public class MinersToolsModClient implements ClientModInitializer {
 
     public static KeyBinding modeToggleKey;
 
+    public static KeyBinding oneshotTriggerKey;
+
     @Override
     public void onInitializeClient() {
         Logger.info("miners-tools:client");
@@ -28,9 +31,20 @@ public class MinersToolsModClient implements ClientModInitializer {
                         GLFW.GLFW_KEY_Z,
                         "category.miners-tools"));
 
+        oneshotTriggerKey = KeyBindingHelper.registerKeyBinding(
+                new KeyBinding(
+                        "key.miners-tools.oneshot-trigger",
+                        InputUtil.Type.KEYSYM,
+                        GLFW.GLFW_KEY_R,
+                        "category.miners-tools"));
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (modeToggleKey.wasPressed()) {
                 ClientPlayNetworking.send(new MinersToolsModeTogglePayload());
+            }
+
+            while (oneshotTriggerKey.wasPressed()) {
+                ClientPlayNetworking.send(new MinersToolsOneshotTriggerPayload());
             }
         });
     }

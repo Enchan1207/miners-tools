@@ -18,22 +18,16 @@ public class BulkBreakDispatcher {
             new MiningStrategy(),
             new HarvestingStrategy());
 
-    /** ワンショットモード (一度だけ大規模破壊) フラグ */
-    private boolean isOneshotModeEnabled;
-
-    public BulkBreakDispatcher() {
-        this.isOneshotModeEnabled = false;
-    }
-
-    public void dispatchStrategy(
+    public static void dispatchStrategy(
             ServerWorld world,
             BlockPos origin,
             PlayerEntity player,
-            BlockState originState) {
+            BlockState originState,
+            boolean isOneshotMode) {
         var tool = player.getMainHandStack();
 
         var strategies = DefaultStrategies;
-        if (isOneshotModeEnabled) {
+        if (isOneshotMode) {
             strategies = List.of(new OneShotStrategy());
         }
 
@@ -47,15 +41,5 @@ public class BulkBreakDispatcher {
                         s.harvest(world, pos, player);
                     }
                 });
-
-        isOneshotModeEnabled = false;
-    }
-
-    public void enableOneshotMode() {
-        this.isOneshotModeEnabled = true;
-    }
-
-    public void disableOneshotMode() {
-        this.isOneshotModeEnabled = false;
     }
 }
